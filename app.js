@@ -86,9 +86,47 @@
     }
   }
 
+  // ===== Number Helpers =====
+  function parseInput(str) {
+    // Strip commas, parse as float
+    return parseFloat(String(str).replace(/,/g, ''));
+  }
+
+  function formatNumber(num, decimals) {
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+  }
+
+  function formatInputValue(value) {
+    // Strip everything except digits and dot
+    let raw = value.replace(/[^0-9.]/g, '');
+
+    // Allow only one decimal point
+    const parts = raw.split('.');
+    if (parts.length > 2) {
+      raw = parts[0] + '.' + parts.slice(1).join('');
+    }
+
+    // Limit to 2 decimal places
+    if (parts.length === 2 && parts[1].length > 2) {
+      raw = parts[0] + '.' + parts[1].slice(0, 2);
+    }
+
+    // Add commas to the integer part
+    const [intPart, decPart] = raw.split('.');
+    const withCommas = intPart ? parseInt(intPart, 10).toLocaleString('en-US') : '';
+
+    // Handle edge case: intPart is empty (user deleted everything)
+    if (!intPart && !decPart) return '';
+
+    return decPart !== undefined ? `${withCommas}.${decPart}` : withCommas;
+  }
+
   // ===== Conversion =====
   function convert() {
-    const input = parseFloat(fromInput.value);
+    const input = parseInput(fromInput.value);
     if (isNaN(input) || input < 0 || !state.rate) {
       toOutput.textContent = '0.00';
       return;
@@ -101,23 +139,11 @@
       result = input / state.rate;
     }
 
-    // Format output
-    const formatted = state.direction === 'USD_TO_COP'
-      ? formatNumber(result, 0)    // COP has no decimals typically
-      : formatNumber(result, 2);   // USD uses 2 decimals
-
-    toOutput.textContent = formatted;
+    // All outputs capped at 2 decimal places
+    toOutput.textContent = formatNumber(result, 2);
     toOutput.classList.remove('result-flash');
-    // Trigger reflow to restart animation
     void toOutput.offsetWidth;
     toOutput.classList.add('result-flash');
-  }
-
-  function formatNumber(num, decimals) {
-    return num.toLocaleString('en-US', {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
   }
 
   // ===== Swap =====
@@ -131,7 +157,7 @@
     const currentOutput = toOutput.textContent.replace(/,/g, '');
     const parsed = parseFloat(currentOutput);
     if (!isNaN(parsed) && parsed > 0) {
-      fromInput.value = parsed;
+      fromInput.value = formatInputValue(parsed.toFixed(2));
     }
     convert();
   }
@@ -220,7 +246,16 @@
   }
 
   // ===== Event Listeners =====
-  fromInput.addEventListener('input', convert);
+  fromInput.addEventListener('input', () => {
+    const cursorPos = fromInput.selectionStart;
+    const oldLen = fromInput.value.length;
+    fromInput.value = formatInputValue(fromInput.value);
+    const newLen = fromInput.value.length;
+    // Adjust cursor position after formatting
+    const newPos = Math.max(0, cursorPos + (newLen - oldLen));
+    fromInput.setSelectionRange(newPos, newPos);
+    convert();
+  });
   swapBtn.addEventListener('click', swap);
 
   window.addEventListener('online', () => {
