@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Convert between USD and COP instantly. Works offline with cached exchange rates.">
+  <meta name="theme-color" content="#0f0f0f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>USD ↔ COP Converter</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner" aria-live="polite" hidden>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+    <span id="offline-text">Offline Mode - Using last known rate</span>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <defs><linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#6ee7b7"/><stop offset="100%" style="stop-color:#3b82f6"/></linearGradient></defs>
+        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      </svg>
+    </div>
+    <h1>Currency Converter</h1>
+    <p class="subtitle">USD ↔ COP · Real-time rates</p>
+  </header>
+
+  <!-- Main Converter Card -->
+  <main class="converter-card">
+
+    <!-- From Section -->
+    <div class="currency-section" id="from-section">
+      <label class="currency-label" for="from-input">
+        <span class="flag" id="from-flag">🇺🇸</span>
+        <span class="currency-code" id="from-code">USD</span>
+        <span class="currency-name" id="from-name">US Dollar</span>
+      </label>
+      <input
+        type="number"
+        id="from-input"
+        class="currency-input"
+        inputmode="decimal"
+        placeholder="0.00"
+        step="any"
+        min="0"
+        aria-label="Amount to convert"
+        autocomplete="off"
+      >
+    </div>
+
+    <!-- Swap Button -->
+    <div class="swap-container">
+      <button id="swap-btn" class="swap-btn" aria-label="Swap currencies" title="Swap currencies">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 16V4m0 0L3 8m4-4l4 4"/>
+          <path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+      </button>
+      <div class="rate-badge" id="rate-badge">
+        <span id="rate-display">Loading rate…</span>
+      </div>
+    </div>
+
+    <!-- To Section -->
+    <div class="currency-section" id="to-section">
+      <label class="currency-label" for="to-output">
+        <span class="flag" id="to-flag">🇨🇴</span>
+        <span class="currency-code" id="to-code">COP</span>
+        <span class="currency-name" id="to-name">Colombian Peso</span>
+      </label>
+      <output id="to-output" class="currency-output" aria-live="polite">0.00</output>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p id="last-updated">Fetching latest rate…</p>
+    <p class="footer-note">Rates via ExchangeRate-API · Updates hourly</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
