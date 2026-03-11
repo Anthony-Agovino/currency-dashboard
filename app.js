@@ -9,6 +9,7 @@
   // ===== Constants =====
   const API_URL = 'https://open.er-api.com/v6/latest/USD';
   const STORAGE_KEY = 'currencyDashboard';
+  const DIRECTION_KEY = 'currencyDirection';
   const UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour in ms
 
   // ===== DOM Elements =====
@@ -45,6 +46,28 @@
       }));
     } catch (e) {
       console.warn('Could not save to localStorage:', e);
+    }
+  }
+
+  function saveDirection() {
+    try {
+      localStorage.setItem(DIRECTION_KEY, state.direction);
+    } catch (e) {
+      console.warn('Could not save direction to localStorage:', e);
+    }
+  }
+
+  function loadDirection() {
+    try {
+      const saved = localStorage.getItem(DIRECTION_KEY);
+      if (saved === 'USD_TO_COP' || saved === 'COP_TO_USD') {
+        state.direction = saved;
+        if (saved === 'COP_TO_USD') {
+          swapBtn.classList.add('swapped');
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load direction from localStorage:', e);
     }
   }
 
@@ -150,6 +173,7 @@
   function swap() {
     state.direction = state.direction === 'USD_TO_COP' ? 'COP_TO_USD' : 'USD_TO_COP';
     swapBtn.classList.toggle('swapped');
+    saveDirection();
     updateLabels();
     updateRateDisplay();
 
@@ -295,6 +319,7 @@
   // ===== Init =====
   function init() {
     loadState();
+    loadDirection();
     updateUI();
 
     if (navigator.onLine) {
