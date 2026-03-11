@@ -1,5 +1,5 @@
 {
-  "name": "USD ↔ COP Currency Converter",
+  "name": "MyCurrencyConverter",
   "short_name": "CurrencyConv",
   "description": "Convert between US Dollars and Colombian Pesos with real-time rates. Works offline.",
   "start_url": "./index.html",
