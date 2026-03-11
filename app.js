@@ -16,8 +16,8 @@
   const fromInput    = document.getElementById('from-input');
   const toOutput     = document.getElementById('to-output');
   const swapBtn      = document.getElementById('swap-btn');
-  const rateDisplay  = document.getElementById('rate-display');
-  const rateBadge    = document.getElementById('rate-badge');
+  const fromRate     = document.getElementById('from-rate');
+  const toRate       = document.getElementById('to-rate');
   const lastUpdated  = document.getElementById('last-updated');
   const offlineBanner = document.getElementById('offline-banner');
   const offlineText  = document.getElementById('offline-text');
@@ -207,15 +207,20 @@
 
   function updateRateDisplay() {
     if (!state.rate) {
-      rateDisplay.textContent = 'Loading rate…';
+      fromRate.textContent = 'Loading rate…';
+      toRate.textContent = 'Loading rate…';
       return;
     }
 
+    const rateCopFormat = formatNumber(state.rate, 2);
+    const rateUsdFormat = formatNumber(1 / state.rate, 6);
+
     if (state.direction === 'USD_TO_COP') {
-      rateDisplay.textContent = `1 USD = ${formatNumber(state.rate, 2)} COP`;
+      fromRate.textContent = `1 USD = ${rateCopFormat} COP`;
+      toRate.textContent = `1 COP = ${rateUsdFormat} USD`;
     } else {
-      const inverse = 1 / state.rate;
-      rateDisplay.textContent = `1 COP = ${formatNumber(inverse, 6)} USD`;
+      fromRate.textContent = `1 COP = ${rateUsdFormat} USD`;
+      toRate.textContent = `1 USD = ${rateCopFormat} COP`;
     }
   }
 

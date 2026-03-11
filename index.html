@@ -45,6 +45,7 @@
         <span class="flag" id="from-flag">🇺🇸</span>
         <span class="currency-code" id="from-code">USD</span>
         <span class="currency-name" id="from-name">US Dollar</span>
+        <div class="unit-rate" id="from-rate"></div>
       </label>
       <input
         type="text"
@@ -65,9 +66,6 @@
           <path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
         </svg>
       </button>
-      <div class="rate-badge" id="rate-badge">
-        <span id="rate-display">Loading rate…</span>
-      </div>
     </div>
 
     <!-- To Section -->
@@ -76,6 +74,7 @@
         <span class="flag" id="to-flag">🇨🇴</span>
         <span class="currency-code" id="to-code">COP</span>
         <span class="currency-name" id="to-name">Colombian Peso</span>
+        <div class="unit-rate" id="to-rate"></div>
       </label>
       <output id="to-output" class="currency-output" aria-live="polite">0.00</output>
     </div>
