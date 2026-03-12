@@ -96,7 +96,7 @@
 
       if (data.result === 'success' && data.rates) {
         state.rates = data.rates;
-        state.timestamp = new Date().toISOString();
+        state.timestamp = data.time_last_update_unix * 1000;
         saveState();
         updateUI();
         hideOfflineBanner();

@@ -3,7 +3,7 @@
  * Cache-first for app shell · Background rate fetching
  */
 
-const CACHE_NAME = 'currency-dashboard-v3';
+const CACHE_NAME = 'currency-dashboard-v4';
 const API_URL = 'https://open.er-api.com/v6/latest/USD';
 
 const APP_SHELL = [
@@ -85,7 +85,7 @@ async function fetchAndBroadcastRate() {
       const message = {
         type: 'RATE_UPDATE',
         rates: data.rates,
-        timestamp: new Date().toISOString(),
+        timestamp: data.time_last_update_unix * 1000,
       };
 
       // Broadcast to all clients
