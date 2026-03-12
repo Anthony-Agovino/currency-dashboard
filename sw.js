@@ -3,7 +3,7 @@
  * Cache-first for app shell · Background rate fetching
  */
 
-const CACHE_NAME = 'currency-dashboard-v5';
+const CACHE_NAME = 'currency-dashboard-v6';
 const API_URL = 'https://open.er-api.com/v6/latest/USD';
 
 const APP_SHELL = [

@@ -211,7 +211,6 @@
     }
     const date = new Date(state.timestamp);
     const formatted = date.toLocaleString('en-US', {
-      timeZone: 'America/Bogota',
       month: 'short',
       day: 'numeric',
       year: 'numeric',
