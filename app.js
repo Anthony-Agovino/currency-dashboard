@@ -96,7 +96,7 @@
 
       if (data.result === 'success' && data.rates) {
         state.rates = data.rates;
-        state.timestamp = data.time_last_update_unix * 1000;
+        state.timestamp = new Date().toISOString();
         saveState();
         updateUI();
         hideOfflineBanner();
@@ -211,6 +211,7 @@
     }
     const date = new Date(state.timestamp);
     const formatted = date.toLocaleString('en-US', {
+      timeZone: 'America/Bogota',
       month: 'short',
       day: 'numeric',
       year: 'numeric',
