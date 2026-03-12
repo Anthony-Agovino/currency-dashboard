@@ -34,7 +34,7 @@
       </svg>
     </div>
     <h1>MyCurrencyConverter</h1>
-    <p class="subtitle">USD ↔ COP · Real-time rates</p>
+    <p class="subtitle">Real-time rates</p>
   </header>
 
   <!-- Main Converter Card -->
@@ -42,19 +42,29 @@
 
     <!-- From Section -->
     <div class="currency-section" id="from-section">
-      <label class="currency-label" for="from-input">
-        <span class="flag" id="from-flag">🇺🇸</span>
-        <span class="currency-code" id="from-code">USD</span>
-        <span class="currency-name" id="from-name">US Dollar</span>
+      <div class="currency-header">
+        <label for="from-currency" class="visually-hidden">From Currency</label>
+        <div class="select-wrapper">
+          <select id="from-currency" class="currency-select" aria-label="From Currency">
+            <option value="USD" selected>🇺🇸 USD - US Dollar</option>
+            <option value="COP">🇨🇴 COP - Colombian Peso</option>
+            <option value="DOP">🇩🇴 DOP - Dominican Peso</option>
+            <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+            <option value="EUR">🇪🇺 EUR - Euro</option>
+          </select>
+          <svg class="select-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
         <div class="unit-rate" id="from-rate"></div>
-      </label>
+      </div>
+      <label for="from-input" class="visually-hidden">Amount to convert</label>
       <input
         type="text"
         id="from-input"
         class="currency-input"
         inputmode="decimal"
         placeholder="0.00"
-        aria-label="Amount to convert"
         autocomplete="off"
       >
     </div>
@@ -71,12 +81,23 @@
 
     <!-- To Section -->
     <div class="currency-section" id="to-section">
-      <label class="currency-label" for="to-output">
-        <span class="flag" id="to-flag">🇨🇴</span>
-        <span class="currency-code" id="to-code">COP</span>
-        <span class="currency-name" id="to-name">Colombian Peso</span>
+      <div class="currency-header">
+        <label for="to-currency" class="visually-hidden">To Currency</label>
+        <div class="select-wrapper">
+          <select id="to-currency" class="currency-select" aria-label="To Currency">
+            <option value="USD">🇺🇸 USD - US Dollar</option>
+            <option value="COP" selected>🇨🇴 COP - Colombian Peso</option>
+            <option value="DOP">🇩🇴 DOP - Dominican Peso</option>
+            <option value="AUD">🇦🇺 AUD - Australian Dollar</option>
+            <option value="EUR">🇪🇺 EUR - Euro</option>
+          </select>
+          <svg class="select-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9l6 6 6-6"/>
+          </svg>
+        </div>
         <div class="unit-rate" id="to-rate"></div>
-      </label>
+      </div>
+      <label for="to-output" class="visually-hidden">Converted amount</label>
       <output id="to-output" class="currency-output" aria-live="polite">0.00</output>
     </div>
 

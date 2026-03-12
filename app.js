@@ -31,43 +31,28 @@
 
   // ===== State =====
   let state = {
-    direction: 'USD_TO_COP', // or 'COP_TO_USD'
-    rate: null,               // COP per 1 USD
+    fromCurrency: 'USD',
+    toCurrency: 'COP',
+    rates: null, // Holds all rates relative to USD
     timestamp: null,
     isOffline: !navigator.onLine,
   };
+
+  // ===== Elements =====
+  const fromSelect = document.getElementById('from-currency');
+  const toSelect = document.getElementById('to-currency');
 
   // ===== LocalStorage =====
   function saveState() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        rate: state.rate,
+        rates: state.rates,
         timestamp: state.timestamp,
+        fromCurrency: state.fromCurrency,
+        toCurrency: state.toCurrency
       }));
     } catch (e) {
       console.warn('Could not save to localStorage:', e);
-    }
-  }
-
-  function saveDirection() {
-    try {
-      localStorage.setItem(DIRECTION_KEY, state.direction);
-    } catch (e) {
-      console.warn('Could not save direction to localStorage:', e);
-    }
-  }
-
-  function loadDirection() {
-    try {
-      const saved = localStorage.getItem(DIRECTION_KEY);
-      if (saved === 'USD_TO_COP' || saved === 'COP_TO_USD') {
-        state.direction = saved;
-        if (saved === 'COP_TO_USD') {
-          swapBtn.classList.add('swapped');
-        }
-      }
-    } catch (e) {
-      console.warn('Could not load direction from localStorage:', e);
     }
   }
 
@@ -76,13 +61,29 @@
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.rate && parsed.timestamp) {
-          state.rate = parsed.rate;
+        if (parsed.rates && parsed.timestamp) {
+          state.rates = parsed.rates;
           state.timestamp = parsed.timestamp;
         }
+        if (parsed.fromCurrency) state.fromCurrency = parsed.fromCurrency;
+        if (parsed.toCurrency) state.toCurrency = parsed.toCurrency;
       }
     } catch (e) {
       console.warn('Could not load from localStorage:', e);
+    }
+    
+    // Set UI selects to match state
+    // Set UI selects to match state
+    if (fromSelect && toSelect) {
+      // Validate that state.fromCurrency exists in our options
+      const fromExists = Array.from(fromSelect.options).some(opt => opt.value === state.fromCurrency);
+      const toExists = Array.from(toSelect.options).some(opt => opt.value === state.toCurrency);
+      
+      if (!fromExists) state.fromCurrency = 'USD';
+      if (!toExists) state.toCurrency = 'COP';
+
+      fromSelect.value = state.fromCurrency;
+      toSelect.value = state.toCurrency;
     }
   }
 
@@ -93,8 +94,8 @@
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 
-      if (data.result === 'success' && data.rates && data.rates.COP) {
-        state.rate = data.rates.COP;
+      if (data.result === 'success' && data.rates) {
+        state.rates = data.rates;
         state.timestamp = new Date().toISOString();
         saveState();
         updateUI();
@@ -111,7 +112,6 @@
 
   // ===== Number Helpers =====
   function parseInput(str) {
-    // Strip commas, parse as float
     return parseFloat(String(str).replace(/,/g, ''));
   }
 
@@ -123,46 +123,37 @@
   }
 
   function formatInputValue(value) {
-    // Strip everything except digits and dot
     let raw = value.replace(/[^0-9.]/g, '');
-
-    // Allow only one decimal point
     const parts = raw.split('.');
-    if (parts.length > 2) {
-      raw = parts[0] + '.' + parts.slice(1).join('');
-    }
-
-    // Limit to 2 decimal places
-    if (parts.length === 2 && parts[1].length > 2) {
-      raw = parts[0] + '.' + parts[1].slice(0, 2);
-    }
-
-    // Add commas to the integer part
+    if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+    if (parts.length === 2 && parts[1].length > 2) raw = parts[0] + '.' + parts[1].slice(0, 2);
     const [intPart, decPart] = raw.split('.');
     const withCommas = intPart ? parseInt(intPart, 10).toLocaleString('en-US') : '';
-
-    // Handle edge case: intPart is empty (user deleted everything)
     if (!intPart && !decPart) return '';
-
     return decPart !== undefined ? `${withCommas}.${decPart}` : withCommas;
   }
 
   // ===== Conversion =====
+  function getRate(from, to) {
+    if (!state.rates || !state.rates[from] || !state.rates[to]) return null;
+    // Base is USD. target / base
+    const usdToFrom = state.rates[from];
+    const usdToTo = state.rates[to];
+    // from -> USD -> to
+    return (1 / usdToFrom) * usdToTo;
+  }
+
   function convert() {
     const input = parseInput(fromInput.value);
-    if (isNaN(input) || input < 0 || !state.rate) {
+    const rate = getRate(state.fromCurrency, state.toCurrency);
+    
+    if (isNaN(input) || input < 0 || !rate) {
       toOutput.textContent = '0.00';
       return;
     }
 
-    let result;
-    if (state.direction === 'USD_TO_COP') {
-      result = input * state.rate;
-    } else {
-      result = input / state.rate;
-    }
+    const result = input * rate;
 
-    // All outputs capped at 2 decimal places
     toOutput.textContent = formatNumber(result, 2);
     toOutput.classList.remove('result-flash');
     void toOutput.offsetWidth;
@@ -171,13 +162,21 @@
 
   // ===== Swap =====
   function swap() {
-    state.direction = state.direction === 'USD_TO_COP' ? 'COP_TO_USD' : 'USD_TO_COP';
-    swapBtn.classList.toggle('swapped');
-    saveDirection();
-    updateLabels();
+    const temp = state.fromCurrency;
+    state.fromCurrency = state.toCurrency;
+    state.toCurrency = temp;
+    
+    // Update the DOM selects
+    fromSelect.value = state.fromCurrency;
+    toSelect.value = state.toCurrency;
+    
+    // UI rotation effect
+    swapBtn.classList.add('swapped');
+    setTimeout(() => swapBtn.classList.remove('swapped'), 350);
+
+    saveState();
     updateRateDisplay();
 
-    // Swap the values too for convenience
     const currentOutput = toOutput.textContent.replace(/,/g, '');
     const parsed = parseFloat(currentOutput);
     if (!isNaN(parsed) && parsed > 0) {
@@ -187,41 +186,22 @@
   }
 
   // ===== UI Updates =====
-  function updateLabels() {
-    if (state.direction === 'USD_TO_COP') {
-      fromFlag.textContent = '🇺🇸';
-      fromCode.textContent = 'USD';
-      fromName.textContent = 'US Dollar';
-      toFlag.textContent   = '🇨🇴';
-      toCode.textContent   = 'COP';
-      toName.textContent   = 'Colombian Peso';
-    } else {
-      fromFlag.textContent = '🇨🇴';
-      fromCode.textContent = 'COP';
-      fromName.textContent = 'Colombian Peso';
-      toFlag.textContent   = '🇺🇸';
-      toCode.textContent   = 'USD';
-      toName.textContent   = 'US Dollar';
-    }
-  }
-
   function updateRateDisplay() {
-    if (!state.rate) {
+    const rate = getRate(state.fromCurrency, state.toCurrency);
+    const inverseRate = getRate(state.toCurrency, state.fromCurrency);
+
+    if (!rate || !inverseRate) {
       fromRate.textContent = 'Loading rate…';
       toRate.textContent = 'Loading rate…';
       return;
     }
 
-    const rateCopFormat = formatNumber(state.rate, 2);
-    const rateUsdFormat = formatNumber(1 / state.rate, 6);
+    // Determine decimal places for rate display
+    const rateFormat = rate < 0.01 ? 6 : 4;
+    const inverseFormat = inverseRate < 0.01 ? 6 : 4;
 
-    if (state.direction === 'USD_TO_COP') {
-      fromRate.textContent = `1 USD = ${rateCopFormat} COP`;
-      toRate.textContent = `1 COP = ${rateUsdFormat} USD`;
-    } else {
-      fromRate.textContent = `1 COP = ${rateUsdFormat} USD`;
-      toRate.textContent = `1 USD = ${rateCopFormat} COP`;
-    }
+    fromRate.textContent = `1 ${state.fromCurrency} = ${formatNumber(rate, rateFormat)} ${state.toCurrency}`;
+    toRate.textContent = `1 ${state.toCurrency} = ${formatNumber(inverseRate, inverseFormat)} ${state.fromCurrency}`;
   }
 
   function updateTimestamp() {
@@ -242,7 +222,6 @@
   }
 
   function updateUI() {
-    updateLabels();
     updateRateDisplay();
     updateTimestamp();
     convert();
@@ -285,6 +264,23 @@
     fromInput.setSelectionRange(newPos, newPos);
     convert();
   });
+  
+  if (fromSelect && toSelect) {
+    fromSelect.addEventListener('change', (e) => {
+      state.fromCurrency = e.target.value;
+      saveState();
+      updateRateDisplay();
+      convert();
+    });
+    
+    toSelect.addEventListener('change', (e) => {
+      state.toCurrency = e.target.value;
+      saveState();
+      updateRateDisplay();
+      convert();
+    });
+  }
+
   swapBtn.addEventListener('click', swap);
 
   window.addEventListener('online', () => {
@@ -300,7 +296,7 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'RATE_UPDATE') {
-        state.rate = event.data.rate;
+        state.rates = event.data.rates;
         state.timestamp = event.data.timestamp;
         saveState();
         updateUI();
@@ -324,7 +320,6 @@
   // ===== Init =====
   function init() {
     loadState();
-    loadDirection();
     updateUI();
 
     if (navigator.onLine) {
